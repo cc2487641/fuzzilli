@@ -26,7 +26,7 @@ public class BaseInstructionMutator: Mutator {
 
         var candidates = [Int]()
         for instr in program.code {
-            if canMutate(instr) {
+            if canMutate(instr, b) {
                 candidates.append(instr.index)
             }
         }
@@ -49,19 +49,24 @@ public class BaseInstructionMutator: Mutator {
                 }
             }
         }
-
-        return b.finalize()
+        let myStr = b.finalize()
+        endMutation(myStr)
+        return myStr
     }
 
     /// Can be overwritten by child classes.
     public func beginMutation(of program: Program) {}
+    
+    /// Can be overwritten by child classes
+    public func endMutation(_ program : Program) {}
 
     /// Overridden by child classes.
     /// Determines the set of instructions that can be mutated by this mutator
-    public func canMutate(_ instr: Instruction) -> Bool {
+    public func canMutate(_ instr: Instruction, _ builder: ProgramBuilder) -> Bool {
+        
         fatalError("This method must be overridden")
     }
-
+    
     /// Overridden by child classes.
     /// Mutate a single statement
     public func mutate(_ instr: Instruction, _ builder: ProgramBuilder) {

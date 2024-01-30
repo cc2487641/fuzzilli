@@ -153,6 +153,75 @@ class MockEvaluator: ProgramEvaluator {
     func resetState() {}
 }
 
+/// Use to test MBAMutator only 
+public func makeMBAFuzzer(config maybeConfiguration: Configuration? = nil, engine maybeEngine: FuzzEngine? = nil, runner maybeRunner: ScriptRunner? = nil, environment maybeEnvironment: Environment? = nil, evaluator maybeEvaluator: ProgramEvaluator? = nil, corpus maybeCorpus: Corpus? = nil) -> Fuzzer {
+    dispatchPrecondition(condition: .onQueue(DispatchQueue.main))
+
+    // The configuration of this fuzzer.
+    let configuration = maybeConfiguration ?? Configuration(logLevel: .warning)
+
+    // A script runner to execute JavaScript code in an instrumented JS engine.
+    let runner = maybeRunner ?? MockScriptRunner()
+
+    // the mutators to use for this fuzzing engine.
+    let mutators = WeightedList<Mutator>([
+        (MBAMutator(),                  1),
+    ])
+
+    let engine = maybeEngine ?? MutationEngine(numConsecutiveMutations: 5)
+
+    // The evaluator to score produced samples.
+    let evaluator = maybeEvaluator ?? MockEvaluator()
+
+    // The environment containing available builtins, property names, and method names.
+    let environment = maybeEnvironment ?? MockEnvironment(builtins: ["Foo": .integer, "Bar": .object(), "Baz": .function()])
+
+    // A lifter to translate FuzzIL programs to JavaScript.
+    let lifter = JavaScriptLifter(prefix: "", suffix: "", ecmaVersion: .es6)
+
+    // Corpus managing interesting programs that have been found during fuzzing.
+    let corpus = maybeCorpus ?? BasicCorpus(minSize: 1000, maxSize: 2000, minMutationsPerSample: 5)
+
+    // Minimizer to minimize crashes and interesting programs.
+    let minimizer = Minimizer()
+
+    // Use all builtin CodeGenerators
+    let codeGenerators = WeightedList<CodeGenerator>(CodeGenerators.map { return ($0, codeGeneratorWeights[$0.name]!) })
+
+    // Use all builtin ProgramTemplates
+    let programTemplates = WeightedList<ProgramTemplate>(ProgramTemplates.map { return ($0, programTemplateWeights[$0.name]!) })
+
+    // Construct the fuzzer instance.
+    let fuzzer = Fuzzer(configuration: configuration,
+                        scriptRunner: runner,
+                        engine: engine,
+                        mutators: mutators,
+                        codeGenerators: codeGenerators,
+                        programTemplates: programTemplates,
+                        evaluator: evaluator,
+                        environment: environment,
+                        lifter: lifter,
+                        corpus: corpus,
+                        minimizer: minimizer,
+                        queue: DispatchQueue.main)
+
+    fuzzer.registerEventListener(for: fuzzer.events.Log) { ev in
+        print("[\(ev.label)] \(ev.message)")
+    }
+
+    fuzzer.initialize()
+
+    // Tests can also rely on the corpus not being empty
+    let b = fuzzer.makeBuilder()
+    b.buildPrefix()
+    b.build(n: 50, by: .generating)
+    corpus.add(b.finalize(), ProgramAspects(outcome: .succeeded))
+
+    return fuzzer
+}
+
+
+
 /// Create a fuzzer instance usable for testing.
 public func makeMockFuzzer(config maybeConfiguration: Configuration? = nil, engine maybeEngine: FuzzEngine? = nil, runner maybeRunner: ScriptRunner? = nil, environment maybeEnvironment: Environment? = nil, evaluator maybeEvaluator: ProgramEvaluator? = nil, corpus maybeCorpus: Corpus? = nil) -> Fuzzer {
     dispatchPrecondition(condition: .onQueue(DispatchQueue.main))

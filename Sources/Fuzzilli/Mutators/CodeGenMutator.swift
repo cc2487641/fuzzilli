@@ -28,7 +28,7 @@ public class CodeGenMutator: BaseInstructionMutator {
         variableAnalyzer = VariableAnalyzer()
     }
 
-    public override func canMutate(_ instr: Instruction) -> Bool {
+    public override func canMutate(_ instr: Instruction, _ b: ProgramBuilder) -> Bool {
         deadCodeAnalyzer.analyze(instr)
         variableAnalyzer.analyze(instr)
         // We can only generate code if there are some visible variables to use, and it only

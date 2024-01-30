@@ -803,10 +803,16 @@ public class ProgramBuilder {
     /// Maps a variable from the program that is currently configured for adoption into the program being constructed.
     public func adopt(_ variable: Variable) -> Variable {
         if !varMaps.last!.contains(variable) {
-            varMaps[varMaps.count - 1][variable] = nextVariable()
+            let myVar = nextVariable()
+            varMaps[varMaps.count - 1][variable] = myVar
         }
 
         return varMaps.last![variable]!
+    }
+    
+    public func replace(old a: Variable, new b: Variable) {
+        // TODO: assert that variable b is not already mapped to another variable
+        varMaps[varMaps.count-1][a] = b
     }
 
     /// Maps a list of variables from the program that is currently configured for adoption into the program being constructed.

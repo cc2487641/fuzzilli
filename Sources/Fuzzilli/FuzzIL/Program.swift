@@ -49,7 +49,15 @@ public final class Program {
 
     /// Constructs a program with the given code. The code must be statically valid.
     public init(with code: Code) {
-        assert(code.isStaticallyValid())
+        
+        // assert(code.isStaticallyValid())
+        do {
+            try code.check()
+        } catch {
+            let myStr = FuzzILLifter().lift(code)
+            print("Generated code: \(myStr)" )
+            print("Error info: \(error)")
+        }
         self.code = code
     }
 

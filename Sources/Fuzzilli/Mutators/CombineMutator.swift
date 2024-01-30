@@ -24,7 +24,7 @@ public class CombineMutator: BaseInstructionMutator {
         contextAnalyzer = ContextAnalyzer()
     }
 
-    public override func canMutate(_ instr: Instruction) -> Bool {
+    public override func canMutate(_ instr: Instruction, _ b: ProgramBuilder) -> Bool {
         deadCodeAnalyzer.analyze(instr)
         contextAnalyzer.analyze(instr)
         let inDeadCode = deadCodeAnalyzer.currentlyInDeadCode

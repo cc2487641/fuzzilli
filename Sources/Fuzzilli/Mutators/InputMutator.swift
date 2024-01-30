@@ -30,7 +30,7 @@ public class InputMutator: BaseInstructionMutator {
         super.init(name: isTypeAware ? "InputMutator (type aware)" : "InputMutator", maxSimultaneousMutations: maxSimultaneousMutations)
     }
 
-    public override func canMutate(_ instr: Instruction) -> Bool {
+    public override func canMutate(_ instr: Instruction, _ b: ProgramBuilder) -> Bool {
         return instr.numInputs > 0
     }
 

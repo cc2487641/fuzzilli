@@ -27,7 +27,7 @@ public class SpliceMutator: BaseInstructionMutator {
         variableAnalyzer = VariableAnalyzer()
     }
 
-    public override func canMutate(_ instr: Instruction) -> Bool {
+    public override func canMutate(_ instr: Instruction, _ b: ProgramBuilder) -> Bool {
         deadCodeAnalyzer.analyze(instr)
         variableAnalyzer.analyze(instr)
         // Splicing benefits from having some visible variables to use as replacements for variables in the copied code,
