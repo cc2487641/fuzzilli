@@ -30,6 +30,7 @@ public class BaseInstructionMutator: Mutator {
                 candidates.append(instr.index)
             }
         }
+        // b.dumpCurrentProgram()
 
         guard candidates.count > 0 else {
             return nil
@@ -49,6 +50,9 @@ public class BaseInstructionMutator: Mutator {
                 }
             }
         }
+        
+        // b.dumpCurrentProgram()
+        
         let myStr = b.finalize()
         endMutation(myStr)
         return myStr
